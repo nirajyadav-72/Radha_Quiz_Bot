@@ -42,9 +42,9 @@ def get_all_data():
     conn = sqlite3.connect(DB_FILE)
     cursor = conn.cursor()
     cursor.execute("SELECT user_id FROM users")
-    users = [row for row in cursor.fetchall()]
+    users = [row[0] for row in cursor.fetchall()] # row[0] se clean integer list milegi
     cursor.execute("SELECT group_id FROM groups")
-    groups = [row for row in cursor.fetchall()]
+    groups = [row[0] for row in cursor.fetchall()]
     conn.close()
     return users, groups
 
@@ -71,7 +71,7 @@ app = Client("quiz_bot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
 @app.on_message(filters.private & filters.command("start"))
 async def start_private(client: Client, message: Message):
     add_user(message.from_user.id)
-    await message.reply_text("👋 Welcome to the Premium Bot in Private Chat!")
+    await message.reply_text("👋 Welcome to the Quiz Bot in Private Chat!")
 
 @app.on_message(filters.group)
 async def track_groups(client: Client, message: Message):
@@ -86,13 +86,15 @@ async def broadcast_cmd(client: Client, message: Message):
         await message.reply_text("🔊 **Use:** `/broadcast [Aapka Message]`")
         return
     
-    broadcast_message = message.text.split(None, 1)
+    # ✅ FIX: Yahan [1] lagane se ab list nahi, sirf text extract hoga
+    broadcast_message = message.text.split(None, 1)[1]
     status_msg = await message.reply_text("⏳ **Broadcast shuru ho raha hai...**")
     
     all_users, all_groups = get_all_data()
     u_success, u_failed = 0, 0
     g_success, g_failed = 0, 0
 
+    # 1. Personal Chats me bhejein
     for u_id in all_users:
         try:
             await client.send_message(chat_id=u_id, text=broadcast_message)
@@ -103,6 +105,7 @@ async def broadcast_cmd(client: Client, message: Message):
         except Exception:
             u_failed += 1
 
+    # 2. Groups me bhejein
     for g_id in all_groups:
         try:
             await client.send_message(chat_id=g_id, text=broadcast_message)
@@ -113,6 +116,7 @@ async def broadcast_cmd(client: Client, message: Message):
         except Exception:
             g_failed += 1
 
+    # Final Report
     await status_msg.edit_text(
         f"📢 **Broadcast Report Complete!**\n\n"
         f"👤 **Private Chats:**\n"
@@ -125,8 +129,6 @@ async def broadcast_cmd(client: Client, message: Message):
 async def unauthorized_broadcast(client: Client, message: Message):
     await message.reply_text("❌ Aapke paas is command ka access nahi hai!")
 
-
-#  STARTUP BANNER LOGIC (Deploy hote hi terminal me dikhega)
 if __name__ == "__main__":
     print("\n" + "="*50)
     print("🚀 TELEGRAM QUIZ BOT IS STARTING UP...")
@@ -136,3 +138,4 @@ if __name__ == "__main__":
     print("="*50 + "\n")
     
     app.run()
+    
