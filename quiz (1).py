@@ -15,6 +15,7 @@ from questions import QUIZ_LIST
 load_dotenv()
 API_TOKEN = os.getenv("BOT_TOKEN")
 OWNER_ID = os.getenv("OWNER_ID")
+SUPPORT_GROUP_ID = os.getenv("SUPPORT_GROUP_ID")  # 👈 [UPDATED] .env से ग्रुप आईडी लोड करने के लिए
 
 if not API_TOKEN:
     raise ValueError("Error: BOT_TOKEN एनवायरनमेंट वेरिएबल्स में नहीं मिला!")
@@ -34,6 +35,13 @@ if OWNER_ID:
         OWNER_ID = int(OWNER_ID)
     except ValueError:
         OWNER_ID = None
+
+# 📌 [UPDATED] ग्रुप आईडी को टेक्स्ट से पूर्णांक (Integer) संख्या में बदलें
+if SUPPORT_GROUP_ID:
+    try:
+        SUPPORT_GROUP_ID = int(SUPPORT_GROUP_ID)
+    except ValueError:
+        SUPPORT_GROUP_ID = None
 
 # 💾 परमानेंट डेटाबेस आर्किटेक्चर (रीस्टार्ट प्रूफ)
 def init_db():
