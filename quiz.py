@@ -360,7 +360,7 @@ def set_global_leaderboard_time(message):
     is_valid_chat = (message.chat.type == 'private' or (SUPPORT_GROUP_ID and message.chat.id == SUPPORT_GROUP_ID))
 
     if not (is_owner and is_valid_chat):
-        try: bot.send_message(message.chat.id, "❌ यह कमांड सिर्फ बॉट ओनर के लिए और अथॉराइज्ड चैट में ही मान्य है।")
+        try: bot.send_message(message.chat.id, "❌ This command is only valid for the bot owner and in authorized chats.")
         except Exception: pass
         return
     
@@ -387,7 +387,7 @@ def handle_owner_broadcast(message):
     is_valid_chat = (message.chat.type == 'private' or (SUPPORT_GROUP_ID and message.chat.id == SUPPORT_GROUP_ID))
 
     if not (is_owner and is_valid_chat):
-        try: bot.send_message(message.chat.id, "❌ यह कमांड सिर्फ बॉट ओनर के लिए और अथॉराइज्ड चैट में ही मान्य है।")
+        try: bot.send_message(message.chat.id, "❌ This command is only valid for the bot owner and in authorized chats.")
         except Exception: pass
         return
 
@@ -448,7 +448,7 @@ def manual_leaderboard_sender(message):
     is_valid_chat = (message.chat.type == 'private' or (SUPPORT_GROUP_ID and message.chat.id == SUPPORT_GROUP_ID))
 
     if not (is_owner and is_valid_chat):
-        try: bot.send_message(message.chat.id, "❌ यह कमांड सिर्फ बॉट ओनर के लिए और अथॉराइज्ड चैट में ही मान्य है।")
+        try: bot.send_message(message.chat.id, "❌ This command is only valid for the bot owner and in authorized chats.")
         except Exception: pass
         return
         
@@ -825,7 +825,7 @@ def send_stats(message):
             f"👤 Total Active Users: **{u_count}**"
         )
     else:
-        try: bot.send_message(message.chat.id, "❌ यह कमांड सिर्फ बॉट ओनर के लिए और अथॉराइज्ड चैट में ही मान्य है।")
+        try: bot.send_message(message.chat.id, "❌ This command is only valid for the bot owner and in authorized chats.")
         except Exception: pass
             
 
