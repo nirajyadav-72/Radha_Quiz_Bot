@@ -345,11 +345,15 @@ def handle_settings_callbacks(call):
     try: bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text=text, reply_markup=markup, parse_mode="Markdown")
     except Exception: pass
 
-# 👑 ओनर कमांड - टाइम सेट करना
-@bot.message_handler(commands=['settime'], chat_types=['private'])
+# 👑 ओनर कमांड - टाइम सेट करना (Strict Group & Owner Security Added)
+@bot.message_handler(commands=['settime'])
 def set_global_leaderboard_time(message):
-    if not (OWNER_ID and message.from_user.id == OWNER_ID):
-        bot.send_message(message.chat.id, "❌ यह कमांड सिर्फ बॉट ओनर के लिए है।")
+    is_owner = (OWNER_ID and message.from_user.id == OWNER_ID)
+    is_valid_chat = (message.chat.type == 'private' or (SUPPORT_GROUP_ID and message.chat.id == SUPPORT_GROUP_ID))
+
+    if not (is_owner and is_valid_chat):
+        try: bot.send_message(message.chat.id, "❌ यह कमांड सिर्फ बॉट ओनर के लिए और अथॉराइज्ड चैट में ही मान्य है।")
+        except Exception: pass
         return
     
     args = message.text.split()
@@ -368,11 +372,15 @@ def set_global_leaderboard_time(message):
     except ValueError:
         bot.send_message(message.chat.id, "❌ **अमान्य समय फॉर्मेट!**\nकृपया 24-घंटे का फॉर्मेट उपयोग करें (जैसे: 13:00, 22:30)।")
 
-# 👑 📢 ओनर कमांड - अपडेटेड ब्रॉडकास्ट फ़ीचर
-@bot.message_handler(commands=['broadcast'], chat_types=['private'])
+# 👑 📢 ओनर कमांड - अपडेटेड ब्रॉडकास्ट फ़ीचर (Strict Group & Owner Security Added)
+@bot.message_handler(commands=['broadcast'])
 def handle_owner_broadcast(message):
-    if not (OWNER_ID and message.from_user.id == OWNER_ID):
-        bot.send_message(message.chat.id, "❌ यह कमांड सिर्फ बॉट ओनर के लिए है।")
+    is_owner = (OWNER_ID and message.from_user.id == OWNER_ID)
+    is_valid_chat = (message.chat.type == 'private' or (SUPPORT_GROUP_ID and message.chat.id == SUPPORT_GROUP_ID))
+
+    if not (is_owner and is_valid_chat):
+        try: bot.send_message(message.chat.id, "❌ यह कमांड सिर्फ बॉट ओनर के लिए और अथॉराइज्ड चैट में ही मान्य है।")
+        except Exception: pass
         return
 
     if not message.reply_to_message:
@@ -423,14 +431,18 @@ def handle_owner_broadcast(message):
              f"🎯 ब्रॉडकास्ट प्रक्रिया पूरी तरह संपन्न!", 
         parse_mode="Markdown"
     )
+    
 
-# 👑 🏆 ओनर कमांड - मैनुअल लीडरबोर्ड सेंडर (सेपरेशन लाइन के साथ)
-@bot.message_handler(commands=['sendresult'], chat_types=['private', 'group', 'supergroup'])
+# 👑 🏆 ओनर कमांड - मैनुअल लीडरबोर्ड सेंडर (Strict Group & Owner Security Added)
+@bot.message_handler(commands=['sendresult'])
 def manual_leaderboard_sender(message):
-    if not (OWNER_ID and message.from_user.id == OWNER_ID): 
-        try: bot.send_message(message.chat.id, "❌ यह कमांड सिर्फ बॉट ओनर के लिए है।")
+    is_owner = (OWNER_ID and message.from_user.id == OWNER_ID)
+    is_valid_chat = (message.chat.type == 'private' or (SUPPORT_GROUP_ID and message.chat.id == SUPPORT_GROUP_ID))
+
+    if not (is_owner and is_valid_chat):
+        try: bot.send_message(message.chat.id, "❌ यह कमांड सिर्फ बॉट ओनर के लिए और अथॉराइज्ड चैट में ही मान्य है।")
         except Exception: pass
-        return  
+        return
         
     status_msg = bot.send_message(message.chat.id, "⏳ **सभी ग्रुप्स में तुरंत नया रिज़ल्ट भेजा जा रहा है...**")
     IST = pytz.timezone('Asia/Kolkata')
@@ -438,7 +450,7 @@ def manual_leaderboard_sender(message):
     
     markup = InlineKeyboardMarkup()
     add_to_group_url = f"https://t.me/{BOT_USERNAME}?startgroup=true"
-    markup.add(InlineKeyboardButton(text="Add Me To Your Group", url=add_to_group_url))
+    markup.add(InlineKeyboardButton(text="➕ Add Me To Your Group ➕", url=add_to_group_url))
     
     with sqlite3.connect(DB_FILE, timeout=20) as conn:
         cursor = conn.cursor()
@@ -456,14 +468,14 @@ def manual_leaderboard_sender(message):
                 if (correct + wrong) > 0:
                     calculated_leaderboard.append((name, correct, wrong, final_score))
             
-            calculated_leaderboard.sort(key=lambda x: x, reverse=True)
+            calculated_leaderboard.sort(key=lambda x: x[3], reverse=True)
             top_20 = calculated_leaderboard[:20]
             
             lb_text = "🏆 **Result [Top 20 user's Leaderboard]**\n"
-            lb_text += f"---------------------------------------\n" # [UPDATED] Header Line
+            lb_text += f"---------------------------------------\n" 
             lb_text += f"📅 Date: {now.strftime('%d-%m-%Y')} | ⏰ Time: {now.strftime('%H:%M')} (Manual)\n"
             lb_text += "📊 Marking: Right (+2) | Wrong (-0.5)\n"
-            lb_text += f"---------------------------------------\n\n" # [UPDATED] Header Line End
+            lb_text += f"---------------------------------------\n\n" 
             
             if top_20:
                 medals = {1: "🥇", 2: "🥈", 3: "🥉"}
@@ -471,7 +483,7 @@ def manual_leaderboard_sender(message):
                     medal = medals.get(idx, f"{idx}.")
                     lb_text += f"{medal} **{name}**\n"
                     lb_text += f"🔥 Score: **{final_score}** pts | ✅ {correct} | ❌ {wrong}\n"
-                    lb_text += f"---------------------------------------\n" # 👈 [NEW LINE ADDED] जो यूजर्स को अलग करेगी
+                    lb_text += f"---------------------------------------\n" 
             else:
                 lb_text += "⚠️ No users participated in the quiz today.\n"
                 lb_text += f"---------------------------------------\n"
@@ -487,7 +499,8 @@ def manual_leaderboard_sender(message):
         cursor.execute("DELETE FROM poll_mapping")
         conn.commit()
     bot.edit_message_text(chat_id=message.chat.id, message_id=status_msg.message_id, text=f"✅ **मालिक, मैनुअल रिज़ल्ट सफलतापूर्वक भेज दिया गया है!**\n📊 कुल **{success_count}** एक्टिव ग्रुप्स में लीडरबोर्ड सेंड हुआ और स्कोर रीसेट कर दिए गए हैं।", parse_mode="Markdown")
-    
+
+
 # 🏆 दैनिक लीडरबोर्ड सेंडर शेड्यूलर (सेपरेशन लाइन के साथ)
 def daily_leaderboard_scheduler():
     has_sent_today = False
@@ -780,10 +793,13 @@ def send_help(message):
     except Exception: pass
         
 
-# 📊 लाइव स्टेटस कमांड
+# 📊 लाइव स्टेटस कमांड (Strict Group & Owner Security Added)
 @bot.message_handler(commands=['status'])
 def send_stats(message):
-    if OWNER_ID and message.from_user.id == OWNER_ID:
+    is_owner = (OWNER_ID and message.from_user.id == OWNER_ID)
+    is_valid_chat = (message.chat.type == 'private' or (SUPPORT_GROUP_ID and message.chat.id == SUPPORT_GROUP_ID))
+
+    if is_owner and is_valid_chat:
         with sqlite3.connect(DB_FILE, timeout=20) as conn:
             cursor = conn.cursor()
             cursor.execute("SELECT COUNT(*) FROM groups")
@@ -796,12 +812,14 @@ def send_stats(message):
             
         bot.send_message(
             message.chat.id, 
-            f"📊 Bot live status:\n\n"
-            f"⚡ Total Active Groups: {g_count}\n"
-            f"👤 Total Active Users: {u_count}"
+            f"📊 **Bot live status:**\n\n"
+            f"🎯 Total Active Groups: **{g_count}**\n"
+            f"👤 Total Active Users: **{u_count}**"
         )
     else:
-        bot.send_message(message.chat.id, "❌ यह कमांड सिर्फ बॉट ओनर के लिए है।")
+        try: bot.send_message(message.chat.id, "❌ यह कमांड सिर्फ बॉट ओनर के लिए और अथॉराइज्ड चैट में ही मान्य है।")
+        except Exception: pass
+            
 
 # 🤖 ग्रुप जॉइन/लीव ट्रैकर (सेम वेलकम मैसेज आर्किटेक्चर)
 @bot.my_chat_member_handler()
